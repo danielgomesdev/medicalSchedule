@@ -1,0 +1,3 @@
+//this is the query formula that simulates the read function
+
+SELECT A, B, C, D, E, F WHERE (B = DATE '"&YEAR($B$2)&"-"&MONTH($B$2)&"-"&DAY($B$2)&"') ORDER BY B, C
