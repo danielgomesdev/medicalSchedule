@@ -1,0 +1,163 @@
+function agendar(){
+  let app = SpreadsheetApp;
+  let ui = app.getUi();
+  let planilha = app.getActiveSpreadsheet();
+  let guia = planilha.getActiveSheet();
+  let tabelaAvaliacoes = planilha.getSheetByName('tabelaAVALIAÇÕES_MÉDICAS');
+  let confirma;
+  let linhaAgendamento = 1;
+  
+  if (guia.getRange(2, 1).getValue() != ''){
+    Browser.msgBox('VOCÊ ESTÁ NO MODO EDIÇÃO. \\n CONCLUA A EDIÇÃO OU USE "LIMPAR".');
+    return false;
+  }
+
+  while (tabelaAvaliacoes.getRange(linhaAgendamento, 2).isBlank() == false){
+    linhaAgendamento++;
+  }
+
+  if(guia.getRange(2, 2).getValue() == ''){
+    Browser.msgBox('SELECIONE DATA.');
+    return false;
+  }
+
+  if(guia.getRange(2, 3).getValue() == ''){
+    Browser.msgBox('DIGITE MATRÍCULA.');
+    return false;
+  }
+
+  if(guia.getRange(2, 6).getValue() == ''){
+    confirma = ui.alert('AGENDAR SEM OBSERVAÇÃO?', ui.ButtonSet.YES_NO);
+  }
+
+  if ((guia.getRange(2, 6).getValue() != '') || (confirma == ui.Button.YES)){
+    tabelaAvaliacoes.getRange(linhaAgendamento, 2).setValue(guia.getRange(2, 2).getValue());
+    tabelaAvaliacoes.getRange(linhaAgendamento, 3).setValue(guia.getRange(2, 3).getValue());
+    tabelaAvaliacoes.getRange(linhaAgendamento, 6).setValue(guia.getRange(2, 6).getValue());    
+  } else {
+    return false;
+  }
+  
+  limpar();
+}
+
+//==============================//===============================//
+function editar(){
+  let app = SpreadsheetApp;
+  let ui = app.getUi();
+  let planilha = app.getActiveSpreadsheet();
+  let guia = planilha.getActiveSheet();
+  let tabelaAvaliacoes = planilha.getSheetByName('tabelaAVALIAÇÕES_MÉDICAS');
+  let linhaAgendamento = 1;
+  let linhaSeleciona = 5;
+
+  if ((guia.getRange(1, 1).getValue() == 0) && (guia.getRange(2, 1).getValue() == '')){
+    Browser.msgBox('SELECIONE AGENDAMENTO PARA EDITAR!');
+    return false;
+  } 
+
+  if ((guia.getRange(1, 1).getValue() > 1) && (guia.getRange(2, 1).getValue() == '')){
+    Browser.msgBox('SELECIONE UM AGENDAMENTO POR VEZ!');
+    return false;
+  }
+
+  if ((guia.getRange(1, 1).getValue() == 1) && (guia.getRange(2, 1).getValue() == '')){
+    while (guia.getRange(linhaSeleciona,7).getValue() == false){
+      linhaSeleciona++;
+    }
+    
+    let editar = guia.getRange(linhaSeleciona, 1).getValue();
+    let confirma = ui.alert(tabelaAvaliacoes.getRange(editar, 3).getValue() + ' ' + tabelaAvaliacoes.getRange(editar, 4).getValue() + '\n AGENDAMENTO: ' + tabelaAvaliacoes.getRange(editar, 2).getValue().toLocaleString().slice(0, 10) + '\n EDITAR AGENDAMENTO?', ui.ButtonSet.YES_NO);
+    if (confirma == ui.Button.YES){
+      limpar();
+      guia.getRange(2, 1).setValue(tabelaAvaliacoes.getRange(editar, 1).getValue());
+      guia.getRange(2, 2).setValue(tabelaAvaliacoes.getRange(editar, 2).getValue());
+      guia.getRange(2, 3).setValue(tabelaAvaliacoes.getRange(editar, 3).getValue());
+      guia.getRange(2, 6).setValue(tabelaAvaliacoes.getRange(editar, 6).getValue());
+      guia.getRange(5, 7).setValue(true);
+      return false; 
+    } else {
+      limpar();
+      return false; 
+    }
+    
+  }
+  
+  if ((guia.getRange(1, 1).getValue() == 1) && (guia.getRange(2, 1).getValue() != '')){
+    let editar = guia.getRange(2, 1).getValue();
+    let confirma = ui.alert('NOVO AGENDAMENTO: \n' + guia.getRange(2, 3).getValue() + ' ' + guia.getRange(2, 4).getValue() + '\n DATA: ' + guia.getRange(2, 2).getValue().toLocaleString().slice(0, 10) + '\n\n CONFIRMA AS ALTERAÇÕES?', ui.ButtonSet.YES_NO);
+    if (confirma == ui.Button.YES){
+      tabelaAvaliacoes.getRange(editar, 2).setValue(guia.getRange(2, 2).getValue());
+      tabelaAvaliacoes.getRange(editar, 3).setValue(guia.getRange(2, 3).getValue());
+      tabelaAvaliacoes.getRange(editar, 6).setValue(guia.getRange(2, 6).getValue());
+      limpar();
+      Browser.msgBox('AGENDAMENTO ALTERADO!')
+      return false; 
+    } else {
+      limpar();
+      return false; 
+    }
+  }
+
+}
+
+
+//==============================//===============================//
+function apagar(){
+  let app = SpreadsheetApp;
+  let ui = app.getUi();
+  let planilha = app.getActiveSpreadsheet();
+  let guia = planilha.getActiveSheet();
+  let tabelaAvaliacoes = planilha.getSheetByName('tabelaAVALIAÇÕES_MÉDICAS');
+  let linhaAgendamento = 1;
+  let linhaSeleciona = 5;
+
+  if (guia.getRange(1, 1).getValue() == 0){
+    Browser.msgBox('SELECIONE AGENDAMENTO PARA EXCLUIR!');
+    return false;
+  } 
+
+  if (guia.getRange(1, 1).getValue() > 1){
+    Browser.msgBox('SELECIONE UM AGENDAMENTO POR VEZ!');
+    return false;
+  }
+
+  if (guia.getRange(1, 1).getValue() == 1){
+    while (guia.getRange(linhaSeleciona,7).getValue() == false){
+      linhaSeleciona++;
+    }
+    //Browser.msgBox(linhaSeleciona);
+    let apagar = guia.getRange(linhaSeleciona, 1).getValue();
+    let confirma = ui.alert(tabelaAvaliacoes.getRange(apagar, 3).getValue() + ' ' + tabelaAvaliacoes.getRange(apagar, 4).getValue() + '\n AGENDAMENTO: ' + tabelaAvaliacoes.getRange(apagar, 2).getValue().toLocaleString().slice(0, 10) + '\n CONFIRMA EXCLUSÃO?', ui.ButtonSet.YES_NO);
+    if (confirma == ui.Button.YES){
+      tabelaAvaliacoes.getRange(apagar, 2).setValue('');
+      tabelaAvaliacoes.getRange(apagar, 3).setValue('');
+      tabelaAvaliacoes.getRange(apagar, 6).setValue('');
+      limpar();
+      Browser.msgBox('AGENDAMENTO EXCLUÍDO!');
+      return false; 
+    } else {
+      limpar();
+      return false; 
+    }
+
+  }
+
+}
+
+//==============================//===============================//
+function limpar(){
+  let app = SpreadsheetApp;
+  let ui = app.getUi();
+  let planilha = app.getActiveSpreadsheet();
+  let guia = planilha.getActiveSheet();
+
+  guia.getRange(2, 1).setValue('');
+  guia.getRange(2, 2).setValue('');
+  guia.getRange(2, 3).setValue('');
+  guia.getRange(2, 6).setValue('');
+  for (let i = 5; i <= 100; i++){
+    guia.getRange(i, 7).setValue('');
+  }
+  guia.getRange(5, 2).activate();
+}
